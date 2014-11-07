@@ -16,7 +16,7 @@
 
 - name: UI - Append monitoring_services to local_settings
   shell: cat /usr/local/share/monasca/ui/local_settings.py >> {{ dashboard_settings_file }}
-  when: monitoring_services_enabled.rc != "0"
+  when: monitoring_services_enabled.rc != 0
   notify:
     - restart apache
 
