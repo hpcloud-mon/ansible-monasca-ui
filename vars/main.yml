@@ -1,0 +1,14 @@
+---
+dashboard_settings_file: /opt/stack/horizon/openstack_dashboard/local/local_settings.py
+grafana_destination: /usr/local/lib/python2.7/dist-packages/monitoring/static/grafana
+
+ui_dest_path: /opt/stack/horizon/openstack_dashboard/local/enabled/
+ui_src_path: /usr/local/share/monasca/ui/enabled/
+ui_py_file: _50_admin_add_monitoring_panel.py
+
+panel_src_path: /usr/local/lib/python2.7/dist-packages/monitoring
+panel_dest_path: /opt/stack/horizon/monitoring
+
+dependencies:
+  - python-monascaclient
+  - monasca-ui

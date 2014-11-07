@@ -1,0 +1,44 @@
+---
+- name: UI - Install dependencies
+  pip: name={{ item }} state=latest
+  with_items: dependencies
+
+- name: UI - Link dashboard
+  file: src={{ ui_src_path }}{{ ui_py_file }} dest={{ ui_dest_path }}{{ ui_py_file }} state=link force=no
+
+- name: UI - Link monitoring directory
+  file: src={{ panel_src_path }} dest={{ panel_dest_path }} state=link force=no
+
+- name: UI - Test for existing monitoring_services in local_settings
+  command: grep -q MONITORING_SERVICES {{ dashboard_settings_file }}
+  ignore_errors: True
+  register: monitoring_services_enabled
+
+- name: UI - Append monitoring_services to local_settings
+  shell: cat /usr/local/share/monasca/ui/local_settings.py >> {{ dashboard_settings_file }}
+  when: monitoring_services_enabled.rc != "0"
+  notify:
+    - restart apache
+
+- name: UI - Test if grafana is already installed
+  shell: test -h {{ grafana_destination }}
+  ignore_errors: True
+  register: grafana_present
+
+- name: UI - Install grafana git repo
+  git: repo=https://github.com/hpcloud-mon/grafana.git dest=/opt/stack/grafana
+  when: grafana_present.rc != 0
+  notify:
+    - restart apache
+
+- name: UI - Install grafana configuration
+  file: src=/opt/stack/grafana/src/config.monasca.js dest=/opt/stack/grafana/src/config.js state=link force=no
+  when: grafana_present.rc != 0
+  notify:
+    - restart apache
+
+- name: UI - Install grafana files
+  file: src=/opt/stack/grafana/src dest={{ grafana_destination }} state=link force=no
+  when: grafana_present.rc != 0
+  notify:
+    - restart apache
