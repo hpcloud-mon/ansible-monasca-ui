@@ -2,9 +2,9 @@
 dashboard_path: /opt/stack/horizon/openstack_dashboard/
 dashboard_settings_file: "{{ dashboard_path }}settings.py"
 
-grafana_src: /opt/stack/grafana/src/
+grafana_repo_dir: /opt/stack/grafana/
 grafana_dest: /opt/stack/horizon/static/grafana
-grafana_config: "{{ grafana_src }}config.js"
+grafana_config: "{{ grafana_repo_dir }}src/config.js"
 
 panel_src_path: /usr/local/lib/python2.7/dist-packages/monitoring/
 panel_dest_path: /opt/stack/horizon/monitoring

@@ -1,6 +1,8 @@
 ---
 - name: UI - Install monasca-ui package
   pip: name=monasca-ui state=latest
+  notify:
+    - restart apache
 
 - name: UI - Link dashboard
   file: src={{ ui_src_path }}{{ ui_py_file }} dest={{ ui_dest_path }}{{ ui_py_file }} state=link force=no
@@ -8,11 +10,13 @@
 - name: UI - Link monitoring directory
   file: src={{ panel_src_path }} dest={{ panel_dest_path }} state=link force=no
 
-- name: UI - Install grafana git repo
-  git: repo=https://github.com/hpcloud-mon/grafana.git dest=/opt/stack/grafana
+- name: UI - Clone grafana git repo
+  git: repo=https://github.com/hpcloud-mon/grafana.git dest={{ grafana_repo_dir }}
+  notify:
+    - restart apache
 
 - name: UI - Install grafana configuration
-  file: src=/opt/stack/grafana/src/config.monasca.js dest={{ grafana_config }} state=link force=no
+  file: src={{ grafana_repo_dir }}src/config.monasca.js dest={{ grafana_config }} state=link force=no
 
 - name: UI - Modify grafana configuration for the correct Monasca API URL
   lineinfile: "dest={{ grafana_config }} regexp='^        url: .*:8080.*' line='        url: \"{{ monasca_api_url }}\",'"
@@ -20,6 +24,6 @@
     - restart apache
 
 - name: UI - Install grafana files
-  file: src={{ grafana_src }} dest={{ grafana_dest }} state=link force=no
+  file: src={{ grafana_repo_dir }}/src dest={{ grafana_dest }} state=link force=no
   notify:
     - restart apache
