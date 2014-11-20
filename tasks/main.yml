@@ -10,6 +10,9 @@
 - name: UI - Link monitoring directory
   file: src={{ panel_src_path }} dest={{ panel_dest_path }} state=link force=no
 
+- name: Install git
+  apt: name=git state=present
+
 - name: UI - Clone grafana git repo
   git: repo=https://github.com/hpcloud-mon/grafana.git dest={{ grafana_repo_dir }}
   notify:
