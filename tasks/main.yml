@@ -30,3 +30,8 @@
   file: src={{ grafana_repo_dir }}/src dest={{ grafana_dest }} state=link force=no
   notify:
     - restart apache
+
+- meta: flush_handlers
+
+- name: Enable apache
+  service: name=apache2 state=started enabled=yes
