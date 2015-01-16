@@ -10,24 +10,30 @@
 - name: UI - Link monitoring directory
   file: src={{ panel_src_path }} dest={{ panel_dest_path }} state=link force=no
 
-- name: Install git
-  apt: name=git state=present
+- name: UI - Fetch grafana tar.gz file
+  get_url: dest=/root/hpcloud-mon-grafana-{{grafana_version}}.tar.gz url={{github_tarball_url}}/{{grafana_version}}
+  register: download
 
-- name: UI - Clone grafana git repo
-  git: repo=https://github.com/hpcloud-mon/grafana.git dest={{ grafana_repo_dir }}
+- name: UI - Uncompress the grafana tar
+  unarchive: copy=no dest={{ grafana_base_dir }} src=/root/hpcloud-mon-grafana-{{grafana_version}}.tar.gz
+  register: untar
+  when: download | changed
   notify:
     - restart apache
 
-- name: UI - Install grafana configuration
-  file: src={{ grafana_repo_dir }}src/config.monasca.js dest={{ grafana_config }} state=link force=no
+# The dir that the tar is extracted to doesn't always match grafana_version so I have to extract it from the output of the command
+- name: UI - Link grafana files
+  file: src={{grafana_base_dir}}/{{ untar.check_results.out.splitlines()[0] | dirname }}/src dest={{ grafana_dest }} state=link force=no
+  when: untar | changed
+  notify:
+    - restart apache
+
+- name: UI - Link grafana configuration
+  file: src={{ grafana_dest }}/config.monasca.js dest={{ grafana_config }} state=link force=no
+  when: untar | changed
 
 - name: UI - Modify grafana configuration for the correct Monasca API URL
   lineinfile: "dest={{ grafana_config }} regexp='^        url: .*:8080.*' line='        url: \"{{ monasca_api_url }}\",'"
-  notify:
-    - restart apache
-
-- name: UI - Install grafana files
-  file: src={{ grafana_repo_dir }}/src dest={{ grafana_dest }} state=link force=no
   notify:
     - restart apache
 
