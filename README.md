@@ -3,7 +3,6 @@ Installs the Monasca UI panel and Grafana on Horizon
 
 ##Requirements
 - Server running OpenStack Horizon
-- monasca_api_url
 
 ##Optional
 

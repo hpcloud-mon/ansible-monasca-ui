@@ -32,11 +32,6 @@
   file: src={{ grafana_dest }}/config.monasca.js dest={{ grafana_config }} state=link force=no
   when: untar | changed
 
-- name: UI - Modify grafana configuration for the correct Monasca API URL
-  lineinfile: "dest={{ grafana_config }} regexp='^        url: .*:8080.*' line='        url: \"{{ monasca_api_url }}\",'"
-  notify:
-    - restart apache
-
 - meta: flush_handlers
 
 - name: Enable apache
