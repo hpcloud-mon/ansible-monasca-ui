@@ -34,8 +34,12 @@
 
 - meta: flush_handlers
 
+- stat: path={{horizon_path}}manage.py
+  register: horizon_manage
+
 - name: UI - Update offline compression manifest
   command: python {{ horizon_path }}manage.py compress --force
+  when: horizon_manage.stat.exists
 
 - name: Enable apache
   service: name=apache2 state=started enabled=yes
