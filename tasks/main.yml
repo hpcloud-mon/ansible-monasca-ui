@@ -21,9 +21,16 @@
   notify:
     - restart apache
 
-# The dir that the tar is extracted to doesn't always match grafana_version so I have to extract it from the output of the command
+# The dir that the tar is extracted to doesn't always match grafana_version so I have to extract it.
+# In Ansible 1.8 this was in the untar variable, in 2.0 there is list_files option you can add to unarchive but in 1.9 we must use this
+# command to discover the tar dir. This method will work for the other versions also.
+- name: Discover the tar path
+  command: tar -tzf /root/hpcloud-mon-grafana-{{grafana_version}}.tar.gz
+  register: tarpath
+  when: untar | changed
+
 - name: UI - Link grafana files
-  file: src={{grafana_base_dir}}/{{ untar.check_results.out.splitlines()[0] | dirname }}/src dest={{ grafana_dest }} state=link force=no
+  file: src={{grafana_base_dir}}/{{ tarpath.stdout_lines[0] | dirname }}/src dest={{ grafana_dest }} state=link force=no
   when: untar | changed
   notify:
     - restart apache
