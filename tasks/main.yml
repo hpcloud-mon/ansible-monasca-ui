@@ -1,6 +1,9 @@
 ---
+- name: Change ownership on monasca download directory.
+  file: path="{{download_tmp_dir}}" state=directory owner=root group=root recurse=yes
+
 - name: UI - Install monasca-ui package
-  pip: name=monasca-ui state=latest
+  pip: name="{{monasca_ui_name}}" state=present extra_args='--pre'
   notify:
     - restart apache
 
@@ -10,12 +13,16 @@
 - name: UI - Link monitoring directory
   file: src={{ panel_src_path }} dest={{ panel_dest_path }} state=link force=no
 
+- name: Copy configuration file
+  template: dest={{ panel_src_path }}/config/local_settings.py owner=root group=root mode=644 src=local_settings.py.j2
+  notify: restart apache
+
 - name: UI - Fetch grafana tar.gz file
-  get_url: dest=/root/hpcloud-mon-grafana-{{grafana_version}}.tar.gz url={{github_tarball_url}}/{{grafana_version}}
+  get_url: dest={{ download_tmp_dir }}/hpcloud-mon-grafana-{{grafana_version}}.tar.gz url={{grafana_tarball_url}}/{{grafana_version}}{{grafana_tarball_file}}
   register: download
 
 - name: UI - Uncompress the grafana tar
-  unarchive: copy=no dest={{ grafana_base_dir }} src=/root/hpcloud-mon-grafana-{{grafana_version}}.tar.gz
+  unarchive: copy=no dest={{ grafana_base_dir }} src={{ download_tmp_dir }}/hpcloud-mon-grafana-{{grafana_version}}.tar.gz
   register: untar
   when: download | changed
   notify:
@@ -25,7 +32,7 @@
 # In Ansible 1.8 this was in the untar variable, in 2.0 there is list_files option you can add to unarchive but in 1.9 we must use this
 # command to discover the tar dir. This method will work for the other versions also.
 - name: Discover the tar path
-  command: tar -tzf /root/hpcloud-mon-grafana-{{grafana_version}}.tar.gz
+  command: tar -tzf {{ download_tmp_dir }}/hpcloud-mon-grafana-{{grafana_version}}.tar.gz
   register: tarpath
   when: untar | changed
 
@@ -39,8 +46,6 @@
   file: src={{ grafana_dest }}/config.monasca.js dest={{ grafana_config }} state=link force=no
   when: untar | changed
 
-- meta: flush_handlers
-
 - stat: path={{horizon_path}}manage.py
   register: horizon_manage
 
@@ -49,4 +54,11 @@
   when: horizon_manage.stat.exists
 
 - name: Enable apache
-  service: name=apache2 state=started enabled=yes
+  service: name="{{ apache_service_name }}" state=started enabled=yes
+
+- stat: path={{horizon_path}}static/monitoring
+  register: static_monitoring
+
+- name: UI - Link static monitoring directory
+  file: src={{ panel_dest_path }}/static/monitoring dest={{ panel_static_dest_path }} state=link force=no
+  when: not static_monitoring.stat.exists
