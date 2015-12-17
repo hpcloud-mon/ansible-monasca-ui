@@ -19,6 +19,10 @@ horizon_path_os:
   RedHat: /usr/share/openstack-dashboard/
   Debian: /opt/stack/horizon/
 
+grafana_base_dir:
+  RedHat: /usr/share
+  Debian: /opt/stack
+
 download_tmp_dir: /opt/monasca_download
 
 apache_conf_dir: "{{ apache_conf_dir_os[ansible_os_family] }}"
@@ -34,7 +38,6 @@ kibana_support_enabled: False
 dashboard_path: "{{ horizon_path }}openstack_dashboard/"
 dashboard_settings_file: "{{ dashboard_path }}settings.py"
 
-grafana_base_dir: /opt/stack
 grafana_dest: "{{ horizon_path }}static/grafana"
 grafana_config: "{{ grafana_dest }}/config.js"
 grafana_version: master
