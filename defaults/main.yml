@@ -19,7 +19,7 @@ horizon_path_os:
   RedHat: /usr/share/openstack-dashboard/
   Debian: /opt/stack/horizon/
 
-grafana_base_dir:
+grafana_base_dir_os:
   RedHat: /usr/share
   Debian: /opt/stack
 
@@ -30,6 +30,7 @@ apache_service_name: "{{ apache_service_name_os[ansible_os_family] }}"
 horizon_path: "{{ horizon_path_os[ansible_os_family] }}"
 grafana_tarball_url: "{{ grafana_tarball_url_os[ansible_os_family] }}"
 panel_src_path: "{{ panel_src_path_os[ansible_os_family] }}"
+grafana_base_dir: "{{ grafana_base_dir_os[ansible_os_family] }}"
 
 monasca_ui_name: monasca-ui
 
