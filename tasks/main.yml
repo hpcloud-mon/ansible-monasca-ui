@@ -35,6 +35,15 @@
   notify:
     - restart apache
 
+- name: UI - Enable grafana in Apache
+  lineinfile:
+    dest: /etc/apache2/sites-available/horizon.conf
+    line: '    Alias /grafana {{ grafana_dest }}'
+    insertafter: ' Alias '
+    state: present
+  notify:
+    - restart apache
+
 - name: UI - Link grafana configuration
   file: src={{ grafana_dest }}/config.monasca.js dest={{ grafana_config }} state=link force=no
   when: untar | changed
