@@ -44,6 +44,10 @@
 - stat: path={{horizon_path}}manage.py
   register: horizon_manage
 
+- name: UI - Collect the static files
+  command: python {{ horizon_path }}manage.py collectstatic --noinput
+  when: horizon_manage.stat.exists
+
 - name: UI - Update offline compression manifest
   command: python {{ horizon_path }}manage.py compress --force
   when: horizon_manage.stat.exists
