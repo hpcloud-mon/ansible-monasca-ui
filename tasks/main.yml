@@ -53,6 +53,10 @@
   command: python {{ horizon_path }}manage.py compress --force
   when: horizon_manage.stat.exists
 
+- name: UI - Compile translation files
+  command: python {{ horizon_path }}manage.py compilemessages -l ja chdir={{ panel_dest_path }}
+  when: horizon_manage.stat.exists
+
 - name: Enable apache
   service: name="{{ apache_service_name }}" state=started enabled=yes
 
